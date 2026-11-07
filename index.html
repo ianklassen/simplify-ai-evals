@@ -1,0 +1,1087 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Simplify AI Evals Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4f4f1;
+        --surface: #ffffff;
+        --surface-2: #eceee9;
+        --ink: #191b1e;
+        --muted: #5b6068;
+        --line: #d8dad3;
+        --low: #177245;
+        --low-bg: #e2f1e6;
+        --low-line: #a9d3b8;
+        --high: #b03327;
+        --high-bg: #fbe9e4;
+        --high-line: #eba99e;
+        --esc: #8a5d00;
+        --esc-bg: #fdf0cd;
+        --esc-line: #e3c878;
+        --btn: #191b1e;
+        --btn-ink: #ffffff;
+        --code-bg: #17191d;
+        --code-ink: #d7e0d2;
+        --radius: 10px;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121316;
+          --surface: #1b1d21;
+          --surface-2: #23262b;
+          --ink: #eceef1;
+          --muted: #9aa0a8;
+          --line: #33373e;
+          --low: #57c98b;
+          --low-bg: #173325;
+          --low-line: #2c5c40;
+          --high: #ff9585;
+          --high-bg: #3d1f1a;
+          --high-line: #6e352c;
+          --esc: #f0c35c;
+          --esc-bg: #38300f;
+          --esc-line: #66591f;
+          --btn: #eceef1;
+          --btn-ink: #141518;
+          --code-bg: #0c0d0f;
+          --code-ink: #c9d6c4;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px 72px; }
+      a { color: inherit; }
+
+      /* ---------- header ---------- */
+      header { padding: 48px 0 8px; }
+      h1 {
+        font-size: clamp(34px, 6vw, 52px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        margin: 0 0 14px;
+        font-weight: 700;
+      }
+      .subtitle {
+        font-size: clamp(17px, 2.6vw, 21px);
+        color: var(--muted);
+        max-width: 640px;
+        margin: 0 0 22px;
+      }
+      .subtitle strong { color: var(--ink); font-weight: 600; }
+      .header-links { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+      .repo-link {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--btn); color: var(--btn-ink);
+        text-decoration: none; font-weight: 600; font-size: 15px;
+        padding: 10px 16px; border-radius: 8px;
+      }
+      .repo-link:hover { opacity: 0.85; }
+      .repo-link svg { flex: none; }
+      .header-note { font-size: 14px; color: var(--muted); }
+
+      h2 {
+        font-size: clamp(22px, 3.4vw, 28px);
+        letter-spacing: -0.01em;
+        margin: 0 0 8px;
+      }
+      .section-lede { color: var(--muted); margin: 0 0 20px; max-width: 680px; }
+      section { margin-top: 56px; }
+
+      /* ---------- the five questions ---------- */
+      .questions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+        list-style: none; margin: 0; padding: 0;
+        counter-reset: q;
+      }
+      .questions li {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+      .questions .qnum {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px; font-weight: 600;
+        color: var(--muted);
+        display: block; margin-bottom: 8px;
+      }
+      .questions p { margin: 0; font-weight: 500; font-size: 15.5px; }
+      .rule-bar {
+        margin-top: 14px;
+        display: flex; flex-wrap: wrap; gap: 10px;
+      }
+      .rule-chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13.5px; font-weight: 600;
+        padding: 8px 14px; border-radius: 999px;
+        border: 1px solid;
+      }
+      .rule-chip.low { color: var(--low); background: var(--low-bg); border-color: var(--low-line); }
+      .rule-chip.high { color: var(--high); background: var(--high-bg); border-color: var(--high-line); }
+
+      /* ---------- flow diagram ---------- */
+      .flow {
+        display: flex; align-items: stretch; gap: 0;
+        margin: 4px 0 26px;
+      }
+      .flow-node {
+        flex: 1 1 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        min-width: 0;
+      }
+      .flow-node .step {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11.5px; font-weight: 600; color: var(--muted);
+        display: block; margin-bottom: 4px;
+      }
+      .flow-node p { margin: 0; font-weight: 600; font-size: 15px; }
+      .flow-node small { color: var(--muted); font-weight: 400; display: block; margin-top: 2px; font-size: 13px; }
+      .flow-arrow {
+        flex: 0 0 30px; display: flex; align-items: center; justify-content: center;
+        color: var(--muted); font-size: 18px;
+      }
+      .branch-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+      .branch-row:first-of-type { margin-top: 8px; }
+      .branch-tag {
+        font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600;
+        padding: 2px 7px; border-radius: 5px; border: 1px solid; white-space: nowrap;
+      }
+      .branch-tag.low { color: var(--low); background: var(--low-bg); border-color: var(--low-line); }
+      .branch-tag.high { color: var(--high); background: var(--high-bg); border-color: var(--high-line); }
+      .branch-row span:last-child { font-size: 13.5px; font-weight: 500; }
+
+      /* ---------- demo controls ---------- */
+      .demo-controls {
+        display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+        margin-bottom: 14px;
+      }
+      .run-btn {
+        background: var(--btn); color: var(--btn-ink);
+        border: 0; border-radius: 8px;
+        font: inherit; font-weight: 600; font-size: 16px;
+        padding: 12px 22px; cursor: pointer;
+      }
+      .run-btn:hover { opacity: 0.85; }
+      .run-btn:disabled { opacity: 0.45; cursor: default; }
+      .reset-btn {
+        background: transparent; color: var(--ink);
+        border: 1px solid var(--line); border-radius: 8px;
+        font: inherit; font-weight: 500; font-size: 15px;
+        padding: 11px 16px; cursor: pointer;
+      }
+      .reset-btn:hover { background: var(--surface-2); }
+      .progress-label { font-family: "IBM Plex Mono", monospace; font-size: 13.5px; color: var(--muted); }
+      .summary-bar {
+        display: flex; flex-wrap: wrap; gap: 8px 22px;
+        font-family: "IBM Plex Mono", monospace; font-size: 13.5px;
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); padding: 12px 16px; margin-bottom: 20px;
+      }
+      .summary-bar b { font-weight: 600; }
+      .summary-bar .ok { color: var(--low); }
+      .summary-bar .bad { color: var(--high); }
+
+      /* ---------- demo layout ---------- */
+      .demo-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 20px;
+        align-items: start;
+      }
+      .task-list { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+      .task-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        opacity: 0.55;
+        transition: opacity 0.35s ease, border-color 0.35s ease;
+      }
+      .task-card.active { opacity: 1; border-color: var(--muted); }
+      .task-card.done { opacity: 1; }
+      .task-head { display: flex; align-items: flex-start; gap: 12px; }
+      .task-num {
+        font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 14px;
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 7px; padding: 3px 9px; flex: none; margin-top: 1px;
+      }
+      .task-title { font-size: 17px; font-weight: 600; margin: 0; flex: 1 1 auto; min-width: 0; }
+      .domain {
+        font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600;
+        color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+        display: block; margin-top: 2px;
+      }
+      .status-pill {
+        font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600;
+        border: 1px solid var(--line); border-radius: 999px;
+        padding: 3px 10px; white-space: nowrap; flex: none;
+        color: var(--muted); background: var(--surface-2);
+      }
+      .status-pill.low { color: var(--low); background: var(--low-bg); border-color: var(--low-line); }
+      .status-pill.high { color: var(--high); background: var(--high-bg); border-color: var(--high-line); }
+      .status-pill.esc { color: var(--esc); background: var(--esc-bg); border-color: var(--esc-line); }
+
+      .stage { display: none; margin-top: 14px; }
+      .stage.show { display: block; animation: rise 0.35s ease both; }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: none; }
+      }
+      .stage-label {
+        font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600;
+        letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+        display: block; margin-bottom: 6px;
+      }
+      .prompt-line { color: var(--muted); font-size: 14.5px; margin: 12px 0 0; }
+      .draft-box {
+        font-family: "IBM Plex Mono", monospace; font-size: 14px;
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 8px; padding: 12px 14px; margin: 0;
+        overflow-wrap: anywhere;
+      }
+      .draft-box .final { display: block; margin-top: 8px; }
+      .sources-line { font-size: 13px; color: var(--muted); margin-top: 8px; }
+      .signal-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+      .signal-chip {
+        font-size: 13px; font-weight: 500;
+        border: 1px solid var(--high-line); color: var(--high); background: var(--high-bg);
+        border-radius: 999px; padding: 3px 11px;
+      }
+      .no-signals { font-size: 14.5px; color: var(--muted); margin: 0; }
+      .tier-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .tier-badge {
+        font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 14px;
+        padding: 4px 12px; border-radius: 7px; border: 1px solid;
+      }
+      .tier-badge.low { color: var(--low); background: var(--low-bg); border-color: var(--low-line); }
+      .tier-badge.high { color: var(--high); background: var(--high-bg); border-color: var(--high-line); }
+      .tier-why { font-size: 14.5px; color: var(--muted); }
+      .gate-box {
+        border: 1px dashed var(--line); border-radius: 8px;
+        padding: 12px 14px; font-size: 14.5px;
+      }
+      .gate-box p { margin: 0; }
+      .gate-box p + p { margin-top: 6px; }
+      .gate-box .who { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted); }
+      .gate-box.fail { border-color: var(--esc-line); background: var(--esc-bg); }
+      .outcome-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .outcome-badge {
+        font-weight: 600; font-size: 14.5px;
+        padding: 4px 12px; border-radius: 7px; border: 1px solid var(--line);
+        background: var(--surface-2);
+      }
+      .outcome-badge.ok { color: var(--low); background: var(--low-bg); border-color: var(--low-line); }
+      .outcome-badge.bad { color: var(--high); background: var(--high-bg); border-color: var(--high-line); }
+      .outcome-badge.esc { color: var(--esc); background: var(--esc-bg); border-color: var(--esc-line); }
+      .released-text { font-size: 14.5px; margin: 10px 0 0; }
+      .released-text em { font-style: normal; font-family: "IBM Plex Mono", monospace; font-size: 13.5px; }
+      .nothing { color: var(--muted); font-size: 14.5px; margin: 10px 0 0; }
+
+      /* ---------- audit log ---------- */
+      .log-panel {
+        background: var(--code-bg); color: var(--code-ink);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        position: sticky; top: 16px;
+        max-height: calc(100vh - 32px);
+        display: flex; flex-direction: column;
+      }
+      .log-panel h3 {
+        margin: 0 0 4px; font-size: 15px; color: #fff;
+        font-family: "IBM Plex Mono", monospace; font-weight: 600;
+      }
+      @media (prefers-color-scheme: dark) { .log-panel h3 { color: var(--ink); } }
+      .log-panel .log-sub { font-size: 12.5px; color: #8b968a; margin: 0 0 12px; }
+      .log-entries {
+        list-style: none; margin: 0; padding: 0;
+        overflow-y: auto; min-height: 120px;
+        font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.5;
+      }
+      .log-entries li {
+        padding: 9px 0; border-top: 1px solid #2a2e33;
+        animation: rise 0.3s ease both;
+        overflow-wrap: anywhere;
+      }
+      .log-entries li:first-child { border-top: 0; }
+      .log-entries .lt { color: #8b968a; }
+      .log-entries .ltier-low { color: #6fd598; font-weight: 600; }
+      .log-entries .ltier-high { color: #ff9d8f; font-weight: 600; }
+      .log-entries .lout { font-weight: 600; color: #fff; }
+      @media (prefers-color-scheme: dark) { .log-entries .lout { color: var(--ink); } }
+      .log-empty { color: #8b968a; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; margin: 0; }
+
+      /* ---------- try your own ---------- */
+      .own-grid {
+        display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 20px; align-items: start;
+      }
+      .own-panel {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); padding: 20px;
+      }
+      .own-panel h3 { margin: 0 0 12px; font-size: 16px; }
+      label.field-label { display: block; font-weight: 600; font-size: 14.5px; margin-bottom: 6px; }
+      textarea, input[type="text"] {
+        width: 100%; font: inherit; font-size: 15px;
+        background: var(--bg); color: var(--ink);
+        border: 1px solid var(--line); border-radius: 8px;
+        padding: 10px 12px;
+      }
+      textarea:focus, input:focus { outline: 2px solid var(--muted); outline-offset: 1px; }
+      .toggle-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+      .toggle-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 9px 10px; border-radius: 8px; cursor: pointer;
+      }
+      .toggle-row:hover { background: var(--surface-2); }
+      .toggle-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+      .switch {
+        flex: none; width: 44px; height: 24px; border-radius: 999px;
+        background: var(--surface-2); border: 1px solid var(--line);
+        position: relative; transition: background 0.2s ease;
+      }
+      .switch::after {
+        content: ""; position: absolute; top: 2px; left: 2px;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--muted); transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .toggle-row input:checked + .switch { background: var(--high-bg); border-color: var(--high-line); }
+      .toggle-row input:checked + .switch::after { transform: translateX(20px); background: var(--high); }
+      .toggle-row input:focus-visible + .switch { outline: 2px solid var(--muted); outline-offset: 2px; }
+      .toggle-row .q-text { font-size: 14.5px; flex: 1 1 auto; }
+      .toggle-row .yn {
+        font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600;
+        color: var(--muted); width: 28px; text-align: right; flex: none;
+      }
+      .toggle-row input:checked ~ .yn { color: var(--high); }
+
+      .own-result-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+      .own-result-head .tier-badge { font-size: 16px; padding: 6px 16px; }
+      .own-gate { font-size: 15px; margin: 0 0 6px; }
+      .own-next { color: var(--muted); font-size: 14.5px; margin: 0; }
+      .review-box {
+        margin-top: 16px; border: 1px dashed var(--high-line);
+        background: var(--high-bg); border-radius: 8px; padding: 14px 16px;
+      }
+      .review-box.esc { border-color: var(--esc-line); background: var(--esc-bg); }
+      .review-box h4 { margin: 0 0 8px; font-size: 14px; font-family: "IBM Plex Mono", monospace; }
+      .review-box .draft-box { background: var(--surface); }
+      .review-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .review-actions button {
+        font: inherit; font-weight: 600; font-size: 14px;
+        border-radius: 7px; padding: 8px 16px; cursor: pointer;
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+      }
+      .review-actions button:hover { background: var(--surface-2); }
+      .review-actions button.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+      .review-actions button:disabled { opacity: 0.45; cursor: default; }
+      .edit-area { margin-top: 12px; display: none; }
+      .edit-area.show { display: block; }
+      .own-outcome { margin-top: 14px; font-size: 14.5px; display: none; }
+      .own-outcome.show { display: block; }
+      .own-log {
+        list-style: none; margin: 14px 0 0; padding: 10px 0 0;
+        border-top: 1px solid var(--line);
+        font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+        display: none;
+      }
+      .own-log.show { display: block; }
+      .own-log li { padding: 4px 0; overflow-wrap: anywhere; }
+
+      footer {
+        margin-top: 64px; padding-top: 20px;
+        border-top: 1px solid var(--line);
+        color: var(--muted); font-size: 14.5px;
+        display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between;
+      }
+      footer a { font-weight: 600; color: var(--ink); }
+
+      /* ---------- responsive ---------- */
+      @media (max-width: 900px) {
+        .demo-grid { grid-template-columns: minmax(0, 1fr); }
+        .log-panel { position: static; max-height: 420px; }
+        .own-grid { grid-template-columns: minmax(0, 1fr); }
+      }
+      @media (max-width: 640px) {
+        .flow { flex-direction: column; gap: 8px; }
+        .flow-arrow { transform: rotate(90deg); flex-basis: 22px; }
+        .task-card { padding: 16px; }
+        header { padding-top: 32px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .stage.show, .log-entries li { animation: none; }
+        .task-card, .switch, .switch::after { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Simplify AI Evals</h1>
+        <p class="subtitle">
+          <strong>Low-risk</strong> work gets a model self-check and runs with a log.
+          <strong>High-risk</strong> work stops for a human gate.
+          The hard part is telling the two apart, before the model touches the work.
+        </p>
+        <div class="header-links">
+          <a class="repo-link" href="https://github.com/ianklassen/simplify-ai-evals" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+            ianklassen/simplify-ai-evals
+          </a>
+          <span class="header-note">The runnable example behind this demo, on GitHub.</span>
+        </div>
+      </header>
+
+      <section aria-labelledby="test-heading">
+        <h2 id="test-heading">The five-question risk test</h2>
+        <p class="section-lede">
+          Answer these for the action the output will cause, not for the draft itself.
+          Drafting a refund email is harmless. Sending it is not.
+        </p>
+        <ol class="questions">
+          <li><span class="qnum">QUESTION 1</span><p>Does this affect revenue?</p></li>
+          <li><span class="qnum">QUESTION 2</span><p>Does it contain customer PII?</p></li>
+          <li><span class="qnum">QUESTION 3</span><p>Is there a legal, regulatory, or compliance issue?</p></li>
+          <li><span class="qnum">QUESTION 4</span><p>Could the customer experience be adversely affected (retention)?</p></li>
+          <li><span class="qnum">QUESTION 5</span><p>Could the experience or process affect the company principles?</p></li>
+        </ol>
+        <div class="rule-bar">
+          <span class="rule-chip high">Any yes &rarr; HIGH risk</span>
+          <span class="rule-chip low">All no &rarr; LOW risk</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="demo-heading">
+        <h2 id="demo-heading">The router, in action</h2>
+        <p class="section-lede">
+          Six tasks go through the same pipeline. The routing decision is deterministic
+          code, not a model call, so every decision can be audited afterwards.
+        </p>
+
+        <div class="flow" aria-hidden="true">
+          <div class="flow-node">
+            <span class="step">STEP 1</span>
+            <p>Model drafts</p>
+            <small>The model returns text only. It has no send, publish, or approve button.</small>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-node">
+            <span class="step">STEP 2</span>
+            <p>Five-question tier check</p>
+            <small>Any yes makes the task HIGH. Signals are never averaged away.</small>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-node">
+            <span class="step">STEP 3 &middot; THE GATE</span>
+            <div class="branch-row"><span class="branch-tag low">LOW</span><span>Model self-check against rules</span></div>
+            <div class="branch-row"><span class="branch-tag high">HIGH</span><span>Human review queue, inside the workflow</span></div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-node">
+            <span class="step">STEP 4</span>
+            <p>Outcome, logged</p>
+            <small>Released, released after edit, sent back, or escalated. Every one is in the audit log.</small>
+          </div>
+        </div>
+
+        <div class="demo-controls">
+          <button class="run-btn" id="runBtn" type="button">Run the demo</button>
+          <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+          <span class="progress-label" id="progressLabel" role="status"></span>
+        </div>
+
+        <div class="summary-bar" aria-live="polite">
+          <span>Routed: <b id="sumRouted">0</b> / 6</span>
+          <span>Released: <b class="ok" id="sumReleased">0</b></span>
+          <span>Sent back: <b class="bad" id="sumBack">0</b></span>
+          <span>Audit log entries: <b id="sumLog">0</b></span>
+        </div>
+
+        <div class="demo-grid">
+          <div class="task-list" id="taskList"></div>
+          <aside class="log-panel" aria-label="Audit log">
+            <h3>Audit log</h3>
+            <p class="log-sub">Written as each task is routed. The log is the point, not a by-product.</p>
+            <p class="log-empty" id="logEmpty">No entries yet. Run the demo.</p>
+            <ol class="log-entries" id="logEntries"></ol>
+          </aside>
+        </div>
+      </section>
+
+      <section aria-labelledby="own-heading">
+        <h2 id="own-heading">Try your own</h2>
+        <p class="section-lede">
+          Describe a task, answer the five questions for it, and watch which gate it lands in.
+          If it is high risk, it waits in the review queue for you to decide.
+        </p>
+        <div class="own-grid">
+          <div class="own-panel">
+            <h3>Your task</h3>
+            <label class="field-label" for="ownDesc">What would the model produce?</label>
+            <textarea id="ownDesc" rows="3" placeholder="e.g. Draft the renewal email that goes to 400 customers">Draft a summary of this week's support tickets for the team wiki</textarea>
+            <ul class="toggle-list" id="toggleList"></ul>
+          </div>
+          <div class="own-panel" aria-live="polite">
+            <h3>Routing</h3>
+            <div class="own-result-head">
+              <span class="tier-badge low" id="ownTier">LOW</span>
+              <span class="tier-why" id="ownWhy">No high-risk signals fired.</span>
+            </div>
+            <p class="own-gate" id="ownGate"></p>
+            <p class="own-next" id="ownNext"></p>
+            <div class="review-box" id="ownReview" hidden>
+              <h4 id="ownReviewTitle">REVIEW QUEUE &middot; WAITING FOR A PERSON</h4>
+              <p class="draft-box" id="ownDraft"></p>
+              <div class="review-actions">
+                <button type="button" class="primary" id="ownApprove">Approve</button>
+                <button type="button" id="ownEditBtn">Edit</button>
+                <button type="button" id="ownSendBack">Send back</button>
+              </div>
+              <div class="edit-area" id="ownEditArea">
+                <label class="field-label" for="ownEditText">Edited draft</label>
+                <textarea id="ownEditText" rows="3"></textarea>
+                <div class="review-actions">
+                  <button type="button" class="primary" id="ownEditRelease">Release edited draft</button>
+                </div>
+              </div>
+            </div>
+            <p class="own-outcome" id="ownOutcome"></p>
+            <ul class="own-log" id="ownLog"></ul>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>Simplify AI Evals: a risk-tier router for AI output. Put the model where the task is generative, not decisive.</span>
+        <a href="https://github.com/ianklassen/simplify-ai-evals" target="_blank" rel="noopener">Run the code on GitHub</a>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+
+      var QUESTIONS = [
+        { id: "revenue",   short: "Affects revenue",                          text: "Does this affect revenue?" },
+        { id: "pii",       short: "Contains customer PII",                    text: "Does it contain customer PII?" },
+        { id: "legal",     short: "Legal, regulatory, or compliance issue",   text: "Is there a legal, regulatory, or compliance issue?" },
+        { id: "cx",        short: "Customer experience (retention)",          text: "Could the customer experience be adversely affected (retention)?" },
+        { id: "principles",short: "Company principles",                       text: "Could the experience or process affect the company principles?" }
+      ];
+
+      function questionShort(id) {
+        for (var i = 0; i < QUESTIONS.length; i++) if (QUESTIONS[i].id === id) return QUESTIONS[i].short;
+        return id;
+      }
+
+      /* The six worked examples, in order, as in the Python demo.
+         Signals are the new five questions. */
+      var TASKS = [
+        {
+          title: "Brainstorm names for an internal project",
+          domain: "Internal",
+          prompt: "Suggest project names.",
+          draft: "Draft names: North Loop, Field Kit, Basecamp Supply.",
+          sources: [],
+          signals: [],
+          gate: "self",
+          checkNote: "Self-check passed: draft is non-empty, and a brainstorm needs no sources.",
+          outcome: "released",
+          outcomeLabel: "Released",
+          actor: "model self-check",
+          logDetail: "rules passed"
+        },
+        {
+          title: "Summarise vendor research for the team",
+          domain: "Internal",
+          prompt: "Summarise these three vendor pages.",
+          draft: "Summary: three vendors compared on price and lead time, from the sources listed.",
+          sources: ["vendor-a.pdf", "vendor-b.pdf", "vendor-c.pdf"],
+          signals: [],
+          gate: "self",
+          checkNote: "Self-check passed: factual draft, grounded in the three listed sources.",
+          outcome: "released",
+          outcomeLabel: "Released",
+          actor: "model self-check",
+          logDetail: "rules passed"
+        },
+        {
+          title: "Publish a product description",
+          domain: "E-commerce",
+          prompt: "Write copy for a new trail shoe.",
+          draft: "Draft copy: \u201CTrail shoe with a grippy sole, built for wet rock.\u201D",
+          sources: ["product-spec-sheet.pdf"],
+          signals: ["revenue", "cx"],
+          gate: "human",
+          review: {
+            decision: "edit",
+            note: "Approved after softening an unverified claim.",
+            edited: "Trail shoe with a grippy sole, made for mixed terrain."
+          },
+          outcome: "released_after_edit",
+          outcomeLabel: "Released after edit",
+          actor: "human reviewer",
+          logDetail: "Approved after softening an unverified claim."
+        },
+        {
+          title: "Reply to a customer asking for a refund",
+          domain: "Finance",
+          prompt: "Draft a refund reply for an $84.00 charge.",
+          draft: "Draft reply: \u201CSorry for the delay. We can refund the $84.00 charge to your original payment method.\u201D",
+          sources: ["order-1842", "refund-policy-v3"],
+          signals: ["revenue", "pii", "cx"],
+          gate: "human",
+          review: {
+            decision: "approve",
+            note: "Refund amount matches the order. OK to send."
+          },
+          outcome: "released",
+          outcomeLabel: "Released (approved)",
+          actor: "human reviewer",
+          logDetail: "Refund amount matches the order. OK to send."
+        },
+        {
+          title: "Flag, and recommend action on, a transaction",
+          domain: "Finance",
+          prompt: "Assess this transaction and recommend next steps.",
+          draft: "Draft flag: \u201CTransaction looks unusual for this account. Recommend: approve.\u201D",
+          sources: ["transaction-9921"],
+          signals: ["revenue", "pii", "legal"],
+          gate: "human",
+          review: {
+            decision: "send_back",
+            note: "Do not approve on a draft flag alone. Pull account history first."
+          },
+          outcome: "sent_back",
+          outcomeLabel: "Sent back",
+          actor: "human reviewer",
+          logDetail: "Do not approve on a draft flag alone. Pull account history first."
+        },
+        {
+          title: "Circulate a note claiming team agreement with no source",
+          domain: "Internal",
+          prompt: "Write a note saying the launch date should move.",
+          draft: "Draft note: \u201CEveryone agrees the launch date should move.\u201D (no source given)",
+          sources: [],
+          signals: [],
+          gate: "escalate",
+          checkFail: "Self-check failed: asserts agreement (\u201Ceveryone agrees\u201D) with no source. Low risk on paper is not no risk, so it escalates to a person.",
+          review: {
+            decision: "approve",
+            note: "Reviewed by a person after the failed check, then released."
+          },
+          outcome: "escalated_then_released",
+          outcomeLabel: "Escalated, then released",
+          actor: "human reviewer (after escalation)",
+          logDetail: "asserts agreement ('everyone agrees') with no source"
+        }
+      ];
+
+      var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, reducedMotion ? 0 : ms); }); }
+      function el(tag, cls, text) {
+        var n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+      }
+
+      /* ---------- build task cards ---------- */
+      var taskList = document.getElementById("taskList");
+      var cardRefs = [];
+
+      TASKS.forEach(function (task, i) {
+        var card = el("article", "task-card");
+        var head = el("div", "task-head");
+        head.appendChild(el("span", "task-num", String(i + 1)));
+        var titleWrap = el("div");
+        titleWrap.style.flex = "1 1 auto";
+        titleWrap.style.minWidth = "0";
+        var h = el("h3", "task-title", task.title);
+        titleWrap.appendChild(h);
+        titleWrap.appendChild(el("span", "domain", task.domain));
+        head.appendChild(titleWrap);
+        var pill = el("span", "status-pill", "Queued");
+        head.appendChild(pill);
+        card.appendChild(head);
+
+        var prompt = el("p", "prompt-line", "Asked of the model: " + task.prompt);
+        card.appendChild(prompt);
+
+        var draftStage = el("div", "stage");
+        draftStage.appendChild(el("span", "stage-label", "Model draft"));
+        var draftBox = el("p", "draft-box", task.draft);
+        draftStage.appendChild(draftBox);
+        if (task.sources.length) {
+          draftStage.appendChild(el("p", "sources-line", "Sources: " + task.sources.join(", ")));
+        } else {
+          draftStage.appendChild(el("p", "sources-line", "Sources: (none)"));
+        }
+        card.appendChild(draftStage);
+
+        var tierStage = el("div", "stage");
+        tierStage.appendChild(el("span", "stage-label", "Tier check \u00B7 five questions"));
+        var tierLine = el("div", "tier-line");
+        var tier = task.signals.length ? "HIGH" : "LOW";
+        var badge = el("span", "tier-badge " + (tier === "HIGH" ? "high" : "low"), tier);
+        tierLine.appendChild(badge);
+        tierLine.appendChild(el("span", "tier-why",
+          tier === "HIGH" ? task.signals.length + " of 5 answers are yes" :
+          (task.gate === "escalate" ? "All five answers are no, on paper" : "All five answers are no")));
+        tierStage.appendChild(tierLine);
+        if (task.signals.length) {
+          var chips = el("div", "signal-chips");
+          chips.style.marginTop = "10px";
+          task.signals.forEach(function (s) { chips.appendChild(el("span", "signal-chip", questionShort(s))); });
+          tierStage.appendChild(chips);
+        } else {
+          var none = el("p", "no-signals", "No high-risk signals fired.");
+          none.style.marginTop = "8px";
+          tierStage.appendChild(none);
+        }
+        card.appendChild(tierStage);
+
+        var gateStage = el("div", "stage");
+        gateStage.appendChild(el("span", "stage-label",
+          task.gate === "self" ? "Gate \u00B7 model self-check" :
+          task.gate === "human" ? "Gate \u00B7 human review queue" :
+          "Gate \u00B7 self-check, then escalation"));
+        var gateBox = el("div", "gate-box");
+        if (task.gate === "self") {
+          gateBox.appendChild(el("p", "", task.checkNote));
+          gateBox.appendChild(el("p", "who", "Decided by: model self-check \u00B7 no human involved"));
+        } else if (task.gate === "human") {
+          gateBox.appendChild(el("p", "", "Held in the review queue. The model cannot release its own draft."));
+          var dec = task.review.decision === "approve" ? "Reviewer approved it." :
+                    task.review.decision === "edit" ? "Reviewer edited it before release." :
+                    "Reviewer sent it back.";
+          gateBox.appendChild(el("p", "", dec + " \u201C" + task.review.note + "\u201D"));
+          gateBox.appendChild(el("p", "who", "Decided by: human reviewer"));
+        } else {
+          gateBox.classList.add("fail");
+          gateBox.appendChild(el("p", "", task.checkFail));
+          gateBox.appendChild(el("p", "", "Reviewer then read it and released it. \u201C" + task.review.note + "\u201D"));
+          gateBox.appendChild(el("p", "who", "Escalated by: model self-check \u00B7 decided by: human reviewer"));
+        }
+        gateStage.appendChild(gateBox);
+        card.appendChild(gateStage);
+
+        var outcomeStage = el("div", "stage");
+        outcomeStage.appendChild(el("span", "stage-label", "Outcome"));
+        var oLine = el("div", "outcome-line");
+        var oCls = task.outcome === "sent_back" ? "bad" : task.outcome === "escalated_then_released" ? "esc" : "ok";
+        oLine.appendChild(el("span", "outcome-badge " + oCls, task.outcomeLabel));
+        oLine.appendChild(el("span", "tier-why", "Decided by: " + task.actor));
+        outcomeStage.appendChild(oLine);
+        if (task.outcome === "sent_back") {
+          outcomeStage.appendChild(el("p", "nothing", "Nothing released. The draft does not ship; it goes back for more evidence."));
+        } else if (task.review && task.review.edited) {
+          var rel = el("p", "released-text");
+          rel.appendChild(document.createTextNode("Released text: "));
+          var em = el("em", "", task.review.edited);
+          rel.appendChild(em);
+          outcomeStage.appendChild(rel);
+        } else {
+          outcomeStage.appendChild(el("p", "released-text", "Released as drafted, and written to the audit log."));
+        }
+        card.appendChild(outcomeStage);
+
+        taskList.appendChild(card);
+        cardRefs.push({ card: card, pill: pill, draft: draftStage, tier: tierStage, gate: gateStage, outcome: outcomeStage });
+      });
+
+      /* ---------- audit log + counters ---------- */
+      var logEntries = document.getElementById("logEntries");
+      var logEmpty = document.getElementById("logEmpty");
+      var counts = { routed: 0, released: 0, back: 0, log: 0 };
+
+      function timeNow() {
+        var d = new Date();
+        function p(n) { return (n < 10 ? "0" : "") + n; }
+        return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+      }
+      function renderCounts() {
+        document.getElementById("sumRouted").textContent = counts.routed;
+        document.getElementById("sumReleased").textContent = counts.released;
+        document.getElementById("sumBack").textContent = counts.back;
+        document.getElementById("sumLog").textContent = counts.log;
+      }
+      function addLog(task, tier, outcome, actor, detail) {
+        logEmpty.style.display = "none";
+        var li = document.createElement("li");
+        var t = el("span", "lt", timeNow() + "  ");
+        li.appendChild(t);
+        li.appendChild(el("span", tier === "HIGH" ? "ltier-high" : "ltier-low", tier));
+        li.appendChild(document.createTextNode("  " + task.title + " \u2192 "));
+        li.appendChild(el("span", "lout", outcome.replace(/_/g, " ")));
+        li.appendChild(document.createElement("br"));
+        li.appendChild(document.createTextNode("actor: " + actor + " \u00B7 " + detail));
+        if (task.signals.length) {
+          li.appendChild(document.createElement("br"));
+          li.appendChild(document.createTextNode("signals: " + task.signals.join(", ")));
+        }
+        logEntries.appendChild(li);
+        li.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
+        counts.log++;
+        renderCounts();
+      }
+
+      /* ---------- run the demo ---------- */
+      var runBtn = document.getElementById("runBtn");
+      var resetBtn = document.getElementById("resetBtn");
+      var progressLabel = document.getElementById("progressLabel");
+      var running = false;
+
+      function resetDemo() {
+        counts = { routed: 0, released: 0, back: 0, log: 0 };
+        renderCounts();
+        logEntries.innerHTML = "";
+        logEmpty.style.display = "";
+        progressLabel.textContent = "";
+        cardRefs.forEach(function (r) {
+          r.card.classList.remove("active", "done");
+          r.pill.className = "status-pill";
+          r.pill.textContent = "Queued";
+          [r.draft, r.tier, r.gate, r.outcome].forEach(function (s) { s.classList.remove("show"); });
+        });
+      }
+
+      function setPill(r, text, cls) {
+        r.pill.textContent = text;
+        r.pill.className = "status-pill" + (cls ? " " + cls : "");
+      }
+
+      async function routeTask(i) {
+        var task = TASKS[i];
+        var r = cardRefs[i];
+        var tier = task.signals.length ? "HIGH" : "LOW";
+        r.card.classList.add("active");
+        r.card.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
+        progressLabel.textContent = "Routing task " + (i + 1) + " of " + TASKS.length + "\u2026";
+
+        setPill(r, "Drafting\u2026");
+        await sleep(650);
+        r.draft.classList.add("show");
+        await sleep(550);
+
+        setPill(r, "Tier: " + tier, tier === "HIGH" ? "high" : "low");
+        r.tier.classList.add("show");
+        await sleep(750);
+
+        if (task.gate === "self") {
+          setPill(r, "Self-checking\u2026", "low");
+          await sleep(700);
+          r.gate.classList.add("show");
+          addLog(task, tier, "released", "model-self-check", task.logDetail);
+          counts.released++;
+        } else if (task.gate === "human") {
+          setPill(r, "In review queue", "high");
+          await sleep(950);
+          r.gate.classList.add("show");
+          addLog(task, tier, task.outcome, "human:reviewer", task.logDetail);
+          if (task.outcome === "sent_back") counts.back++; else counts.released++;
+        } else {
+          setPill(r, "Self-checking\u2026", "low");
+          await sleep(700);
+          addLog(task, tier, "escalated", "model-self-check", task.logDetail);
+          setPill(r, "Escalated to a human", "esc");
+          await sleep(800);
+          r.gate.classList.add("show");
+          addLog(task, tier, task.outcome, "human:reviewer", task.review.note);
+          counts.released++;
+        }
+        counts.routed++;
+        renderCounts();
+
+        r.outcome.classList.add("show");
+        var finalCls = task.outcome === "sent_back" ? "high" : task.outcome === "escalated_then_released" ? "esc" : (tier === "HIGH" ? "high" : "low");
+        setPill(r, task.outcomeLabel, finalCls === "esc" ? "esc" : finalCls);
+        r.card.classList.remove("active");
+        r.card.classList.add("done");
+        await sleep(450);
+      }
+
+      runBtn.addEventListener("click", async function () {
+        if (running) return;
+        running = true;
+        runBtn.disabled = true;
+        resetDemo();
+        for (var i = 0; i < TASKS.length; i++) {
+          await routeTask(i);
+        }
+        progressLabel.textContent = "Done. " + counts.released + " released, " + counts.back + " sent back, " + counts.log + " log entries.";
+        runBtn.textContent = "Run it again";
+        runBtn.disabled = false;
+        running = false;
+      });
+      resetBtn.addEventListener("click", function () {
+        if (running) return;
+        resetDemo();
+        runBtn.textContent = "Run the demo";
+      });
+
+      /* ---------- try your own ---------- */
+      var ownDesc = document.getElementById("ownDesc");
+      var toggleList = document.getElementById("toggleList");
+      var ownTier = document.getElementById("ownTier");
+      var ownWhy = document.getElementById("ownWhy");
+      var ownGate = document.getElementById("ownGate");
+      var ownNext = document.getElementById("ownNext");
+      var ownReview = document.getElementById("ownReview");
+      var ownReviewTitle = document.getElementById("ownReviewTitle");
+      var ownDraft = document.getElementById("ownDraft");
+      var ownOutcome = document.getElementById("ownOutcome");
+      var ownLog = document.getElementById("ownLog");
+      var ownEditArea = document.getElementById("ownEditArea");
+      var ownEditText = document.getElementById("ownEditText");
+      var ownState = { decided: false };
+
+      var toggles = {};
+      QUESTIONS.forEach(function (q) {
+        var li = document.createElement("li");
+        var label = el("label", "toggle-row");
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.id = "tg-" + q.id;
+        input.setAttribute("aria-label", q.text);
+        var sw = el("span", "switch");
+        var txt = el("span", "q-text", q.text);
+        var yn = el("span", "yn", "No");
+        label.appendChild(input);
+        label.appendChild(sw);
+        label.appendChild(txt);
+        label.appendChild(yn);
+        li.appendChild(label);
+        toggleList.appendChild(li);
+        toggles[q.id] = input;
+        input.addEventListener("change", function () {
+          yn.textContent = input.checked ? "Yes" : "No";
+          evaluateOwn();
+        });
+      });
+
+      function firedSignals() {
+        return QUESTIONS.filter(function (q) { return toggles[q.id].checked; }).map(function (q) { return q.id; });
+      }
+      function ownSelfCheckFails(desc) {
+        if (!desc.trim()) return "the draft is empty";
+        if (/everyone agrees|team agrees|all agree|we all agree/i.test(desc) && !/source|per the|according to|minutes|thread|doc/i.test(desc)) {
+          return "it asserts agreement with no source";
+        }
+        return null;
+      }
+      function ownLogLine(text) {
+        ownLog.classList.add("show");
+        var li = document.createElement("li");
+        li.textContent = timeNow() + "  " + text;
+        ownLog.appendChild(li);
+      }
+      function setReviewButtons(enabled) {
+        ["ownApprove", "ownEditBtn", "ownSendBack", "ownEditRelease"].forEach(function (id) {
+          document.getElementById(id).disabled = !enabled;
+        });
+      }
+
+      function evaluateOwn() {
+        var fired = firedSignals();
+        var desc = ownDesc.value;
+        ownState.decided = false;
+        ownOutcome.classList.remove("show");
+        ownOutcome.textContent = "";
+        ownEditArea.classList.remove("show");
+        setReviewButtons(true);
+
+        if (fired.length) {
+          ownTier.textContent = "HIGH";
+          ownTier.className = "tier-badge high";
+          ownWhy.textContent = fired.map(questionShort).join(" \u00B7 ");
+          ownGate.textContent = "Gate: human review queue. The model drafts, then stops. Nothing ships until a person decides.";
+          ownNext.textContent = "What happens next: the draft waits in the queue below. Approve it, edit it, or send it back. The decision is logged either way.";
+          ownReview.hidden = false;
+          ownReview.classList.remove("esc");
+          ownReviewTitle.textContent = "REVIEW QUEUE \u00B7 WAITING FOR A PERSON";
+          ownDraft.textContent = desc.trim() ? desc : "(describe the task on the left to see its draft here)";
+        } else {
+          var fail = ownSelfCheckFails(desc);
+          ownTier.textContent = "LOW";
+          ownTier.className = "tier-badge low";
+          ownWhy.textContent = "No high-risk signals fired.";
+          if (fail) {
+            ownGate.textContent = "Gate: model self-check, and it just failed: " + fail + ".";
+            ownNext.textContent = "What happens next: a failed self-check escalates. The task moves to the review queue below, even though it scored LOW.";
+            ownReview.hidden = false;
+            ownReview.classList.add("esc");
+            ownReviewTitle.textContent = "ESCALATED \u00B7 SELF-CHECK FAILED";
+            ownDraft.textContent = desc;
+          } else {
+            ownGate.textContent = "Gate: model self-check. The draft is checked against explicit rules: non-empty, grounded, no unsourced claims.";
+            ownNext.textContent = "What happens next: the self-check passes, the output is released, and the release is written to the log. No human is interrupted.";
+            ownReview.hidden = true;
+          }
+        }
+      }
+
+      function ownDecide(kind) {
+        if (ownState.decided) return;
+        var fired = firedSignals();
+        var tier = fired.length ? "HIGH" : "LOW (escalated)";
+        var text;
+        if (kind === "approve") {
+          text = "Approved by you. Released as drafted.";
+          ownLogLine(tier + " \u00B7 your task \u2192 released \u00B7 actor: human:you \u00B7 approved in review");
+        } else if (kind === "edit") {
+          var edited = ownEditText.value.trim();
+          if (!edited) { ownEditText.focus(); return; }
+          text = "Released after your edit: \u201C" + edited + "\u201D";
+          ownLogLine(tier + " \u00B7 your task \u2192 released after edit \u00B7 actor: human:you");
+        } else {
+          text = "Sent back by you. Nothing ships; the draft returns to the model with your decision in the log.";
+          ownLogLine(tier + " \u00B7 your task \u2192 sent back \u00B7 actor: human:you");
+        }
+        ownState.decided = true;
+        ownOutcome.textContent = text;
+        ownOutcome.classList.add("show");
+        setReviewButtons(false);
+      }
+
+      document.getElementById("ownApprove").addEventListener("click", function () { ownDecide("approve"); });
+      document.getElementById("ownSendBack").addEventListener("click", function () { ownDecide("send_back"); });
+      document.getElementById("ownEditBtn").addEventListener("click", function () {
+        if (ownState.decided) return;
+        ownEditText.value = ownDesc.value;
+        ownEditArea.classList.add("show");
+        ownEditText.focus();
+      });
+      document.getElementById("ownEditRelease").addEventListener("click", function () { ownDecide("edit"); });
+      ownDesc.addEventListener("input", evaluateOwn);
+
+      evaluateOwn();
+    </script>
+  </body>
+</html>
