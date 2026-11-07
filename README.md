@@ -2,9 +2,9 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ianklassen/simplify-ai-evals)
 
-[Run the demo in your browser](https://codespaces.new/ianklassen/simplify-ai-evals) — no setup, the demo runs automatically when the codespace starts.
+**[Live demo →](https://ianklassen.github.io/simplify-ai-evals/)**
 
-A runnable example of tiered gating for AI output.
+A runnable example of tiered gating for AI output. Click the live demo and see it in action in your browser, no setup, no sign-in.
 
 Put the model where the task is generative, not decisive. Let it move fast where a mistake is cheap and reversible. Put a human in front of anything revenue-affecting, containing customer PII, raising a legal, regulatory, or compliance issue, adversely affecting the customer experience, or affecting company principles.
 
@@ -28,15 +28,23 @@ A task is high risk if **any** of these fire. No averaging, no exceptions.
 
 That is the whole classifier. It is deterministic code, not a model call, and that is deliberate: detection and scoring stay rule-based and auditable, generation stays behind a gate, and judgment stays with a person.
 
-## Run it
+## Try it
 
-No dependencies. No API key. Python 3.10+.
+### In your browser — the live demo
 
-**1. In your browser, no setup — GitHub Codespaces**
+**[Live demo →](https://ianklassen.github.io/simplify-ai-evals/)**
+
+It runs the same six worked examples as the Python version, in the browser, and lets you try your own task by toggling the five questions. No setup, no sign-in.
+
+### In GitHub Codespaces — no setup
 
 Open the repo on GitHub, click the green **Code** button, then **Codespaces** → **Create codespace on main**. The demo runs automatically when the codespace starts.
 
-**2. Clone it**
+[Open in GitHub Codespaces](https://codespaces.new/ianklassen/simplify-ai-evals)
+
+### On your machine
+
+No dependencies. No API key. Python 3.10+.
 
 ```bash
 git clone https://github.com/ianklassen/simplify-ai-evals.git
@@ -46,7 +54,7 @@ python3 risk-tier-router.py --interactive   # you play the reviewer
 python3 risk-tier-router.py --json          # audit log as JSON
 ```
 
-**3. Without cloning — run it straight from GitHub**
+### Without cloning
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/ianklassen/simplify-ai-evals/main/risk-tier-router.py | python3 -
