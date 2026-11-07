@@ -4,8 +4,10 @@ Risk Tier Router — a runnable example of tiered gating for AI output.
 
 Put the model where the task is generative, not decisive.
 Let it move fast where a mistake is cheap and reversible.
-Put a human in front of anything that touches money, a customer,
-compliance, or something hard to undo.
+Put a human in front of anything revenue-affecting, containing
+customer PII, raising a legal, regulatory, or compliance issue,
+adversely affecting the customer experience, or affecting
+company principles.
 
     LOW RISK  -> model drafts + model self-checks against rules -> release, logged
     HIGH RISK -> model drafts -> human reviews in a queue -> approve / edit / send back, logged
@@ -57,20 +59,20 @@ from enum import Enum
 
 @dataclass
 class Signals:
-    touches_money: bool = False       # payments, refunds, pricing, approvals
-    touches_customer: bool = False    # a customer will see / be affected by it
-    compliance_related: bool = False  # regulated, legal, or policy-bound
-    hard_to_undo: bool = False        # publish, send, delete, commit, transact
-    sensitive_data: bool = False      # personal, financial, or health data
+    affects_revenue: bool = False         # revenue-affecting: pricing, refunds, sales
+    contains_customer_pii: bool = False   # customer personal data is involved
+    legal_regulatory_compliance: bool = False  # legal, regulatory, or compliance issue
+    customer_experience_retention: bool = False  # customer experience could be adversely affected
+    affects_company_principles: bool = False  # the experience or process could affect company principles
 
     def triggered(self) -> list[str]:
         """Names of the high-risk signals that fired, in a stable order."""
         checks = [
-            ("touches_money", self.touches_money),
-            ("touches_customer", self.touches_customer),
-            ("compliance_related", self.compliance_related),
-            ("hard_to_undo", self.hard_to_undo),
-            ("sensitive_data", self.sensitive_data),
+            ("affects_revenue", self.affects_revenue),
+            ("contains_customer_pii", self.contains_customer_pii),
+            ("legal_regulatory_compliance", self.legal_regulatory_compliance),
+            ("customer_experience_retention", self.customer_experience_retention),
+            ("affects_company_principles", self.affects_company_principles),
         ]
         return [name for name, fired in checks if fired]
 
@@ -291,22 +293,22 @@ def demo_tasks() -> list[Task]:
         Task("research-summary", "Summarise vendor research for the team",
              "internal", "Summarise these three vendor pages.",
              Signals(), sources=["vendor-a.pdf", "vendor-b.pdf", "vendor-c.pdf"]),
-        # 3 — HIGH (e-commerce): customers will read it, publishing is hard to undo.
+        # 3 — HIGH (e-commerce): customers will read it, and a bad experience hurts retention.
         Task("product-description", "Publish a product description",
              "e-commerce", "Write copy for a new trail shoe.",
-             Signals(touches_customer=True, hard_to_undo=True),
+             Signals(customer_experience_retention=True, affects_revenue=True),
              sources=["product-spec-sheet.pdf"]),
         # 4 — HIGH (finance / support): money moves, a customer is affected.
         Task("support-reply", "Reply to a customer asking for a refund",
              "finance", "Draft a refund reply for an $84.00 charge.",
-             Signals(touches_money=True, touches_customer=True,
-                     sensitive_data=True),
+             Signals(affects_revenue=True, customer_experience_retention=True,
+                     contains_customer_pii=True),
              sources=["order-1842", "refund-policy-v3"]),
         # 5 — HIGH (finance): the model recommends, a human must decide.
         Task("transaction-flag", "Flag — and recommend action on — a transaction",
              "finance", "Assess this transaction and recommend next steps.",
-             Signals(touches_money=True, compliance_related=True,
-                     hard_to_undo=True, sensitive_data=True),
+             Signals(affects_revenue=True, legal_regulatory_compliance=True,
+                     contains_customer_pii=True),
              sources=["transaction-9921"]),
         # 6 — LOW on paper, escalated in practice: self-check fails.
         Task("internal-note-no-sources", "Circulate a note claiming team agreement",
@@ -355,4 +357,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 
