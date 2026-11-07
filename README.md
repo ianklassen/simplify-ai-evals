@@ -2,7 +2,7 @@
 
 A runnable example of tiered gating for AI output.
 
-Put the model where the task is generative, not decisive. Let it move fast where a mistake is cheap and reversible. Put a human in front of anything that touches money, a customer, compliance, or something hard to undo.
+Put the model where the task is generative, not decisive. Let it move fast where a mistake is cheap and reversible. Put a human in front of anything revenue-affecting, containing customer PII, raising a legal, regulatory, or compliance issue, adversely affecting the customer experience, or affecting company principles.
 
 ## The idea
 
@@ -16,11 +16,11 @@ The gate lives inside the workflow, in a review queue, not held up in an email i
 
 A task is high risk if **any** of these fire. No averaging, no exceptions.
 
-1. Does it touch money? (payments, refunds, pricing, approvals)
-2. Does it touch a customer? (a customer will see it or be affected by it)
-3. Is it compliance-related? (regulated, legal, or policy-bound)
-4. Is it hard to undo? (publish, send, delete, commit, transact)
-5. Does it involve sensitive data? (personal, financial, or health data)
+1. Does this affect revenue?
+2. Does it contain customer PII?
+3. Is there a legal, regulatory, or compliance issue?
+4. Could the customer experience be adversely affected (retention)?
+5. Could the experience or process affect the company principles?
 
 That is the whole classifier. It is deterministic code, not a model call, and that is deliberate: detection and scoring stay rule-based and auditable, generation stays behind a gate, and judgment stays with a person.
 
