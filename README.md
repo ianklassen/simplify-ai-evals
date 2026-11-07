@@ -1,7 +1,5 @@
 # Simplify AI Evals
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/ianklassen/simplify-ai-evals)
-
 **[Live demo →](https://ianklassen.github.io/simplify-ai-evals/)**
 
 A runnable example of tiered gating for AI output. Click the live demo and see it in action in your browser, no setup, no sign-in.
